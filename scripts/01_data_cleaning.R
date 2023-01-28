@@ -65,7 +65,7 @@ rm(raw_data)
 
 ### Clean data ###
 cleaned_data<- clean_names(reduced_data) %>% 
-  rename(population2021 = f2021_population_projection)
+  rename(population2021 = f2021_population_projection) 
 rm(reduced_data)
 
 ### Save cleaned data ###
