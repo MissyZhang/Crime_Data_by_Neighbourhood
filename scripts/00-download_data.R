@@ -21,4 +21,3 @@ raw_data <-
 
 ### Save raw data ###
 write_csv(raw_data, "inputs/data/raw_data.csv")
-
