@@ -17,8 +17,7 @@ raw_data<- read.csv("inputs/data/raw_data.csv")
 names(raw_data)
 reduced_data<-
   raw_data %>% 
-  select(HoodName,
-         F2021_Population_Projection,
+  select(F2021_Population_Projection,
          Assault_Rate2017,
          Assault_Rate2018,
          Assault_Rate2019,
@@ -58,7 +57,7 @@ reduced_data<-
          TheftfromMotorVehicle_Rate2018,
          TheftfromMotorVehicle_Rate2019,
          TheftfromMotorVehicle_Rate2020,
-         TheftfromMotorVehicle_Rate2021,
+         TheftfromMotorVehicle_Rate2021
          )
 rm(raw_data)
 
