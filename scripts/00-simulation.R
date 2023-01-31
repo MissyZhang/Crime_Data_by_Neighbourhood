@@ -10,7 +10,7 @@
 set.seed(853)
 number_of_years <- 5
 number_of_neighborhoods <- 4
-number_of_crime_types <-4
+number_of_crime_types <- 4
 
 simulated_data<-
   tibble(

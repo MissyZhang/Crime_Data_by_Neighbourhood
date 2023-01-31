@@ -1,0 +1,218 @@
+---
+title: "doupi3"
+subtitle: "sid"
+author: "Mengze Zhang"
+thanks: 'Code and data are available at [github.com/MissyZhang/Crime_Data_by_Neighbourhood](https://github.com/MissyZhang/Crime_Data_by_Neighbourhood).'
+date: "`r Sys.time()`"
+date-format: "D MMMM YYYY"
+abstract: "we consider data about and find that"
+format: pdf
+bibliography: reference.bib
+---
+
+```{r}
+#| include: FALSE
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palettetown)
+library(here)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+```
+
+# Introfuction
+
+
+
+# Data
+
+
+## Data Source ##
+
+
+
+## Data Collection ##
+
+
+
+## Data Analysis ##
+
+Analysis for this project uses the R statistical programming language [@citeR], and more specifically, the `tidyverse` package for data manipulation [@citetidyverse].Because the data is managed using R Projects, `here` is used to reference file locations [@citehere].
+
+```{r}
+#| include: FALSE
+# Import the data that was first imported by 00-download_data.R
+# and then cleaned by 01_data_cleaning.R
+cleaned_data <- readr::read_csv(here::here("inputs/data/cleaned_data.csv")) 
+
+# Classify neighborhoods by population
+cleaned_data$neighbothood_size <- cut(cleaned_data$population2021, breaks = c(-Inf,10000, 15000, 25000,Inf), labels = c("Small", "Medium", "Large", "Giant"), right = FALSE)
+
+```
+
+```{r}
+#| echo: FALSE
+#| warning: False
+#| message: false
+crime_rate_by_nbsize2021 <- cleaned_data |>
+  select(neighbothood_size, 
+         assault_rate2021,  
+         auto_theft_rate2021, 
+         break_and_enter_rate2021,
+         robbery_rate2021,
+         theft_over_rate2021,
+         homicide_rate2021,
+         shootings_rate2021,
+         theftfrom_motor_vehicle_rate2021
+         ) |>
+  group_by(neighbothood_size)|>
+  summarise(mean_assault_rate=mean(assault_rate2021, na.rm = TRUE),
+            mean_auto_theft_rate=mean(auto_theft_rate2021, na.rm = TRUE),
+            mean_break_and_enter_rate=mean(break_and_enter_rate2021, na.rm = TRUE),
+            mean_robbery_rate=mean(robbery_rate2021, na.rm = TRUE),
+            mean_theft_over_rate=mean(theft_over_rate2021, na.rm = TRUE),
+            mean_homicide_rate=mean(homicide_rate2021, na.rm = TRUE),
+            mean_shootings_rate=mean(shootings_rate2021, na.rm = TRUE),
+            mean_theftfrom_motor_vehicle_rate=mean(theftfrom_motor_vehicle_rate2021, na.rm = TRUE)) |>
+
+
+# Tidy up names so they are better for the table display:
+  rename("Assault" = mean_assault_rate,
+         "Auto Theft" = mean_auto_theft_rate,
+         "Break & Enter" = mean_break_and_enter_rate,
+         "Robbery" = mean_robbery_rate,
+         "Theft" = mean_theft_over_rate,
+         "Homicide" = mean_homicide_rate,
+         "Shooting" = mean_shootings_rate,
+         "Motor Theft" = mean_theftfrom_motor_vehicle_rate,
+         "Neighborhood Size" = neighbothood_size) |>
+  mutate_if(is.numeric, round, 2) # round rate averages to 2 decimal places
+
+# Put the results in a table:
+pivottable <-as_tibble(cbind(nms = names(crime_rate_by_nbsize2021), t(crime_rate_by_nbsize2021))) 
+
+kable(pivottable [-1,],
+      col.names = c("Neighborhood Size",
+                    "Small",
+                    "Medium",
+                    "Large",
+                    "Giant"),
+  caption = "Mean crime rate by neighborhood size in 2021",
+      booktabs = TRUE, 
+      longtable = TRUE
+      ) |>
+   kable_styling(bootstrap_options = c("hover", "condensed")) |>
+
+# Style the table
+  column_spec(1, width = "14em") %>%
+  column_spec(2, width = "3em") %>%
+  column_spec(3, width = "3em") %>%
+  column_spec(4, width = "3em") %>%
+  column_spec(5, width = "3em") %>%
+  pack_rows("Crime Type", 1, 8) %>%
+  kableExtra::kable_styling(latex_options = c("scale_down", "hold_position"))
+
+```
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| n-col: 2
+#homicide(NA), shooting(NA), motor theft
+selected_crime_rate2021 <- cleaned_data |>
+  select(population2021, homicide_rate2021, shootings_rate2021, theftfrom_motor_vehicle_rate2021) 
+
+homicide <-
+  selected_crime_rate2021 |>
+  ggplot(mapping = aes(x = population2021, y= homicide_rate2021))+
+  geom_jitter() +
+  geom_smooth(method = lm, se = FALSE) +
+  theme_minimal() +
+  labs(
+    x = "Population",
+    y = "Homocide Rate",
+    )
+
+shootings <-
+  selected_crime_rate2021 |>
+  ggplot(mapping = aes(x = population2021, y= shootings_rate2021))+
+  geom_jitter() +
+  geom_smooth(method = lm, se = FALSE) +
+  theme_minimal() +
+  labs(
+    x = "Population",
+    y = "Shootings Rate",
+    )
+
+
+motor <-
+  selected_crime_rate2021 |>
+  ggplot(mapping = aes(x = population2021, y= theftfrom_motor_vehicle_rate2021))+
+  geom_jitter() +
+  geom_smooth(method = lm, se = FALSE) +
+  theme_minimal() +
+  labs(
+    x = "Population",
+    y = "Motor theft Rate",
+    )
+
+(homicide + shootings) /
+  motor
+  
+```
+```{r}
+#| include: false
+#| echo: false
+#| message: false
+#| warning: false
+mean_crime_rate_each_year <- cleaned_data |>
+  select(-population2021,-neighbothood_size) |>
+  summarise_all(mean, na.rm = TRUE)
+
+
+mean_crime_rate_by_year_and_crime_type <- data.frame(
+  crime_type = c(rep(x="Assault", 5),
+                 rep(x="Auto Theft", 5), 
+                 rep(x="Break & Enter", 5),
+                 rep(x="Robbery", 5),
+                 rep(x="Theft", 5), 
+                 rep(x="Homicide", 5),
+                 rep(x="Shooting" , 5),
+                 rep(x="Motor Theft", 5)
+                 ),
+  year= c(2017:2021),
+  mean_crime_rate = gather(mean_crime_rate_each_year)
+)
+  
+```
+
+
+```{r}
+#| fig.cap: "Crime rate in Toronto by category and year"
+#| fig.width : 8
+#| fig.height : 4
+#| echo : FALSE
+#| message : FALSE
+#| warning : FALSE
+#| out.width : '80%'
+#| fig.align : "center"
+
+mean_crime_rate_by_year_and_crime_type |>
+  select(crime_type, year, mean_crime_rate.value) |>
+  group_by(crime_type) |>
+  ggplot() +
+  geom_point(aes(x = year, y = mean_crime_rate.value, color = crime_type), size = 2) +
+  scale_color_poke(pokemon = 'Charizard', spread = NULL)+ 
+  theme_light() + 
+   labs(x = "Year", y = "Mean Crime Rate",
+       title = " Assaults Are the Most Frequently Committed Category Offense") + 
+  guides(color = guide_legend(title = "Category",override.aes = list(size=3))) +
+    theme(plot.title = element_text(face = "bold"))
+
+  
+
+
+```
+```
