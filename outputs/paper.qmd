@@ -9,53 +9,128 @@ abstract: "we consider data about and find that"
 format: pdf
 bibliography: reference.bib
 ---
+```{r setup}
+#| include: FALSE
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
 
 ```{r}
 #| include: FALSE
-knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(palettetown)
+library(palettetown) # color palette for fig1
 library(here)
+library(dplyr)
+library(tidyr)
+library(tibble)
 library(ggplot2)
-library(knitr)
+library(knitr) #generate report
 library(kableExtra)
 library(patchwork)
+library(ggpubr) #arrange patch
 ```
-
-# Introfuction
-
-
-
-# Data
-
-
-## Data Source ##
-
-
-
-## Data Collection ##
-
-
-
-## Data Analysis ##
-
-Analysis for this project uses the R statistical programming language [@citeR], and more specifically, the `tidyverse` package for data manipulation [@citetidyverse].Because the data is managed using R Projects, `here` is used to reference file locations [@citehere].
 
 ```{r}
 #| include: FALSE
 # Import the data that was first imported by 00-download_data.R
 # and then cleaned by 01_data_cleaning.R
 cleaned_data <- readr::read_csv(here::here("inputs/data/cleaned_data.csv")) 
-
-# Classify neighborhoods by population
-cleaned_data$neighbothood_size <- cut(cleaned_data$population2021, breaks = c(-Inf,10000, 15000, 25000,Inf), labels = c("Small", "Medium", "Large", "Giant"), right = FALSE)
-
 ```
 
+
+# Introduction
+
+
+
+# Data
+
+## Data Source 
+This report utilizes data on crime rates in Toronto neighborhoods obtained from the Toronto Police Service Annual Statistical Report (ASR) [@tpsasr]. The ASR is a comprehensive overview of police related statistics which has been openly available to the public since 2019 [@asr].
+
+
+## Data Collection
+
+## Data Characteristics 
+
+The Neighborhood Crime Rates dataset contains aggregated data of 8 types of crime in each Toronto neighborhood between the years 2014 and 2020. There are 16920 observations in the dataset and 7 attributes: index, object ID, hood name, hood ID, 2021 population projection, count of each crime type in each year, crime rate of each crime type in each year. The first 4 attributes are identifiers which were removed prior to analysis. An additional attribute to categorize neighborhoods based on population was created during analysis by dividing the population into quartiles and label each neighborhood accordingly (e.g. "small", "medium", "large", "giant"). The crime counts are aggregated by neighborhood, year, and crime type, which I deleted because I only want to focus on crime rate out of such a big dataset. Finally, the crime rate is calculated as the crime count per 100,000 population per year, which I selected data from 2017 to 2021 to cut the data short and clean while also remains rigorousness for reasonable analysis.
+
+
+## Data Analysis
+
+Analysis for this project uses the R statistical programming language [@citeR], as well as `tidyverse` [@citetidyverse], `tidyr` [@tidyr] and `dplyr` [@dplyr] programming packages. Because the data is managed using R Projects, `here` is used to reference file locations [@citehere]. Figures and tables are created with `ggplot2` [@ggplot2]  and `kableextra` [@kableextra], and new data frame is created with `tibble` [@tibble]. The package `knitr` [@knitr] is used to generate the PDF report. The package `palettetown` [@palette] is used to create color palette for figures, and the packages `patchwork` [@patchwork] and `ggpubr` [@ggpubr] are used to patch graphs together. 
+
+The first aspect of the data I investigated is the year-on-year changes in crime rates for different crime categories. @fig-eachyear shows changes in average crime rates for 8 different crime types from 2017 to 2021. It is clear that assault has the highest crime rate in each year, fluctuating around 600, while homicide has the lowest and remains stable around 10. Both the motorcycle theft rate and break and enter rate have a trend of rising first and then falling, with turning points in 2020 and 2019 respectively. The robbery rate decreases year by year from 2017 to 2021, while auto theft rate sees an increase and even exceeded break and enter rate in 2021. Similar to homicide rate, both theft rate and shooting rate remain relatively low and stable over the time period, with theft rate (around 50) slightly higher than shooting rate (around 30) each year.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+# Create a dataframe containing mean crime rate data
+mean_crime_rate_each_year <- cleaned_data |>
+  select(-population2021) |>
+  summarise_all(mean, na.rm = TRUE)
+
+mean_crime_rate_by_year_and_crime_type <- data.frame(
+  crime_type = c(rep(x="Assault", 5),
+                 rep(x="Auto Theft", 5), 
+                 rep(x="Break & Enter", 5),
+                 rep(x="Robbery", 5),
+                 rep(x="Theft", 5), 
+                 rep(x="Homicide", 5),
+                 rep(x="Shooting" , 5),
+                 rep(x="Motor Theft", 5)
+                 ),
+  year= c(2017:2021),
+  mean_crime_rate = gather(mean_crime_rate_each_year)
+)
+```
+
+
+```{r}
+#| label: fig-eachyear
+#| fig.cap: "Crime rate in Toronto by category and year"
+#| fig.width : 8
+#| fig.height : 4
+#| echo : FALSE
+#| message : FALSE
+#| warning : FALSE
+#| out.width : '80%'
+#| fig.align : "center"
+
+# Plot the data in a point graph
+mean_crime_rate_by_year_and_crime_type |>
+  select(crime_type, year, mean_crime_rate.value) |>
+  group_by(crime_type) |>
+  ggplot() +
+  geom_point(aes(x = year, y = mean_crime_rate.value, color = crime_type), size = 2) +
+  scale_color_poke(pokemon = 'Charizard', spread = NULL)+ 
+  theme_light() + 
+   labs(x = "Year", y = "Mean Crime Rate",
+       title = " Assaults Are the Most Frequently Committed Category Offense") + 
+  guides(color = guide_legend(title = "Category",override.aes = list(size=3))) +
+    theme(plot.title = element_text(face = "bold"))
+```
+
+The next aspect of the data I analyzed is the relationship between population and crime rate.
+
+* Small neighborhood: Has a population fewer than 10,000
+* Medium neighborhood: Has a population between 10,001 and 15,000
+* Large neighborhood: Has a population between 15,001 and 2,0000
+* Giant neighborhood: Has a population more than 20,000
+ 
 ```{r}
 #| echo: FALSE
 #| warning: False
 #| message: false
+#| label: tab-meancrimerate
+
+
+# Classify neighborhoods by population
+cleaned_data$neighbothood_size <- cut(cleaned_data$population2021, breaks = c(-Inf,10000, 15000, 20000,Inf), labels = c("Small", "Medium", "Large", "Giant"), right = FALSE)
+
+# Select and summarize variables 
 crime_rate_by_nbsize2021 <- cleaned_data |>
   select(neighbothood_size, 
          assault_rate2021,  
@@ -99,7 +174,7 @@ kable(pivottable [-1,],
                     "Medium",
                     "Large",
                     "Giant"),
-  caption = "Mean crime rate by neighborhood size in 2021",
+      caption = "Mean crime rate by neighborhood size in 2021",
       booktabs = TRUE, 
       longtable = TRUE
       ) |>
@@ -111,108 +186,77 @@ kable(pivottable [-1,],
   column_spec(3, width = "3em") %>%
   column_spec(4, width = "3em") %>%
   column_spec(5, width = "3em") %>%
-  pack_rows("Crime Type", 1, 8) %>%
+  pack_rows("Crime Category", 1, 8) %>%
   kableExtra::kable_styling(latex_options = c("scale_down", "hold_position"))
 
 ```
+
+
+
+[insert something here] 
+
 ```{r}
+#| label: fig-popucrime
+#| fig.cap: "Relationship between crime rate and population"
 #| echo: false
-#| message: false
 #| warning: false
+#| message: false
 #| n-col: 2
-#homicide(NA), shooting(NA), motor theft
+
+# Select variables
 selected_crime_rate2021 <- cleaned_data |>
   select(population2021, homicide_rate2021, shootings_rate2021, theftfrom_motor_vehicle_rate2021) 
 
+# Illustrate relationship between population and crime rate
 homicide <-
   selected_crime_rate2021 |>
   ggplot(mapping = aes(x = population2021, y= homicide_rate2021))+
   geom_jitter() +
-  geom_smooth(method = lm, se = FALSE) +
+  geom_smooth(method = lm, color = "darkturquoise", se = FALSE) +
   theme_minimal() +
-  labs(
-    x = "Population",
-    y = "Homocide Rate",
-    )
+  labs( x = "",
+        y = "",
+   title = "Homicide"
+    ) +
+  theme(plot.title = element_text(hjust=0.5))
 
 shootings <-
   selected_crime_rate2021 |>
   ggplot(mapping = aes(x = population2021, y= shootings_rate2021))+
   geom_jitter() +
-  geom_smooth(method = lm, se = FALSE) +
+  geom_smooth(method = lm, color = "darkturquoise", se = FALSE) +
   theme_minimal() +
-  labs(
-    x = "Population",
-    y = "Shootings Rate",
-    )
+  labs( x = "",
+        y = "",
+    title = "Shootings"
+    ) +
+  theme(plot.title = element_text(hjust=0.5))
 
 
 motor <-
   selected_crime_rate2021 |>
   ggplot(mapping = aes(x = population2021, y= theftfrom_motor_vehicle_rate2021))+
   geom_jitter() +
-  geom_smooth(method = lm, se = FALSE) +
-  theme_minimal() +
-  labs(
-    x = "Population",
-    y = "Motor theft Rate",
-    )
-
-(homicide + shootings) /
-  motor
-  
-```
-```{r}
-#| include: false
-#| echo: false
-#| message: false
-#| warning: false
-mean_crime_rate_each_year <- cleaned_data |>
-  select(-population2021,-neighbothood_size) |>
-  summarise_all(mean, na.rm = TRUE)
+  geom_smooth(method = lm, color = "darkturquoise", se = FALSE) +
+  theme_minimal()+
+  labs( x = "",
+        y = "",
+    title = "Motor Theft"
+    ) +
+  theme(plot.title = element_text(hjust=0.5))
 
 
-mean_crime_rate_by_year_and_crime_type <- data.frame(
-  crime_type = c(rep(x="Assault", 5),
-                 rep(x="Auto Theft", 5), 
-                 rep(x="Break & Enter", 5),
-                 rep(x="Robbery", 5),
-                 rep(x="Theft", 5), 
-                 rep(x="Homicide", 5),
-                 rep(x="Shooting" , 5),
-                 rep(x="Motor Theft", 5)
-                 ),
-  year= c(2017:2021),
-  mean_crime_rate = gather(mean_crime_rate_each_year)
-)
-  
+# Patch graphs together
+patch <- ggarrange((homicide + shootings) /
+  motor)
+
+annotate_figure(patch, 
+                top = "Relationship Between Homicide Rate and Population Is More Obvious",
+                bottom = "Population",
+                left = "Crime Rate")
 ```
 
+# Discussion
 
-```{r}
-#| fig.cap: "Crime rate in Toronto by category and year"
-#| fig.width : 8
-#| fig.height : 4
-#| echo : FALSE
-#| message : FALSE
-#| warning : FALSE
-#| out.width : '80%'
-#| fig.align : "center"
+# Reference
 
-mean_crime_rate_by_year_and_crime_type |>
-  select(crime_type, year, mean_crime_rate.value) |>
-  group_by(crime_type) |>
-  ggplot() +
-  geom_point(aes(x = year, y = mean_crime_rate.value, color = crime_type), size = 2) +
-  scale_color_poke(pokemon = 'Charizard', spread = NULL)+ 
-  theme_light() + 
-   labs(x = "Year", y = "Mean Crime Rate",
-       title = " Assaults Are the Most Frequently Committed Category Offense") + 
-  guides(color = guide_legend(title = "Category",override.aes = list(size=3))) +
-    theme(plot.title = element_text(face = "bold"))
-
-  
-
-
-```
-```
