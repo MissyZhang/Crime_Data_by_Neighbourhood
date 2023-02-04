@@ -49,15 +49,13 @@ cleaned_data <- readr::read_csv(here::here("inputs/data/cleaned_data.csv"))
 This report utilizes data on crime rates in Toronto neighborhoods obtained from the Toronto Police Service Annual Statistical Report (ASR) [@tpsasr]. The ASR is a comprehensive overview of police related statistics which has been openly available to the public since 2019 [@asr]. The neighborhood crime rate dataset analyzed in this report was obtained in csv format from the City of Toronto Open Data Portal using the R package `opendatatoronto` [@citeopendatatoronto]. The dataset was last updated on May 18th, 2022.
 
 
-## 2.2 Data Collection
 
-
-## 2.3 Data Characteristics 
+## 2.2 Data Characteristics 
 
 The Neighborhood Crime Rates dataset contains aggregated data of 8 types of crime in each Toronto neighborhood between the years 2014 and 2020. There are 16920 observations in the dataset and 7 attributes: index, object ID, hood name, hood ID, 2021 population projection, count of each crime type in each year, crime rate of each crime type in each year. The first 4 attributes are identifiers which were removed prior to analysis. An additional attribute to categorize neighborhoods based on population was created during analysis by dividing the population into quartiles and label each neighborhood accordingly (e.g. "small", "medium", "large", "giant"). The crime counts are aggregated by neighborhood, year, and crime type, which I deleted because I only want to focus on crime rate out of such a big dataset. Finally, the crime rate is calculated as the crime count per 100,000 population per year, which I selected data from 2017 to 2021 to cut the data short and clean while also remains rigorousness for reasonable analysis.
 
 
-## 2.4 Data Analysis
+## 2.3 Data Analysis
 
 Analysis for this project uses the R statistical programming language [@citeR], as well as `tidyverse` [@citetidyverse], `tidyr` [@tidyr] and `dplyr` [@dplyr] programming packages. Because the data is managed using R Projects, `here` is used to reference file locations [@citehere]. Figures and tables are created with `ggplot2` [@ggplot2]  and `kableextra` [@kableextra], and new data frame is created with `tibble` [@tibble]. The package `knitr` [@knitr] is used to generate the PDF report. The package `palettetown` [@palette] is used to create color palette for figures, and the packages `patchwork` [@patchwork] and `ggpubr` [@ggpubr] are used to patch graphs together. 
 
@@ -253,7 +251,6 @@ annotate_figure(patch,
                 left = "Crime Rate")
 ```
 
-# 3. Discussion
 
 # Reference
 
