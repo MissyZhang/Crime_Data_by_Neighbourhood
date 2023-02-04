@@ -1,11 +1,11 @@
 ---
-title: "doupi3"
-subtitle: "sid"
+title: "Population of Neighborhoods Has a Limited Impact on Crime Rates"
+subtitle: "An Analysis of Toronto Crime Data by Neighborhood"
 author: "Mengze Zhang"
 thanks: 'Code and data are available at [github.com/MissyZhang/Crime_Data_by_Neighbourhood](https://github.com/MissyZhang/Crime_Data_by_Neighbourhood).'
 date: "`r Sys.time()`"
 date-format: "D MMMM YYYY"
-abstract: "we consider data about and find that"
+abstract: "The report analyzed crime rate data in Toronto neighborhoods obtained from the Toronto Police Service Annual Statistical Report between 2017 and 2021. The findings showed that crime rates in different categories showed varying trends over the years, but crime rates varied by neighborhood size without a direct relationship to population. This report concludes that the population of neighborhoods has a limited impact on crime rates and highlights the importance of considering multiple factors, such as socio-economic status and policing practices, in understanding crime patterns. This study provides valuable insights for policymakers in allocating policing resources and designing crime prevention initiatives, thereby improving the safety and well-being of communities."
 format: pdf
 bibliography: reference.bib
 ---
