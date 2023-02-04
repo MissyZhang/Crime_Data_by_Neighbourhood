@@ -5,7 +5,6 @@
 # Date: 2023-01-27
 # Pre-requisites: None
 
-
 # Create simulated data
 set.seed(853)
 number_of_years <- 5
