@@ -38,28 +38,38 @@ cleaned_data <- readr::read_csv(here::here("inputs/data/cleaned_data.csv"))
 ```
 
 
-# 1.Introduction
+# 1. Introduction
 
+The relationship between population and crime rates has been an area of interest for scholars and policymakers for many years. One popular argument is that population density and population size can have an impact on crime rates, with higher population density and larger populations often associated with higher crime rates [@Karstedt].However, the relationship between population and crime is complex and multi-faceted, with many other factors, such as socio-economic status, cultural values, and policing practices, also playing important roles [@Gifford].
 
+In recent years, there has been a growing interest in using crime data and analysis to inform policy and practice. Crime data is increasingly being made available to the public through open data initiatives, and there is a growing body of literature on the use of crime data for policy purposes. In this context, the relationship between population and crime is of particular interest, as it has important implications for policy and practice, including the allocation of policing resources and the design of crime prevention initiatives.
 
-# 2.Data
+To explore this relationship, this report analyses crime rate data in Toronto neighborhoods obtained from the Toronto Police Service Annual Statistical Report (ASR) [@tpsasr]. The dataset analyzed in this report contains crime rate data for 8 different types of crime between the years 2017 and 2021 for each neighborhood in Toronto.
+
+This report will first consider the year-on-year changes in crime rates for different crime categories. The findings showed that the crime rate in different categories showed varying trends over the years. Assault had the highest rate while homicide had the lowest and remained stable. Theft of motorcycles and breaking and entering showed an initial increase followed by a decrease, while auto theft showed a consistent increase. The second aspect of the data analyzed was the relationship between population and crime rate. Neighborhoods were categorized based on their population, and the findings showed that crime rates varied by neighborhood size but did not have a direct relationship with population. Finally, it will discuss the limits of the crime rate data, in terms of bias and in terms of measuring the societal value of the data.
+
+# 2. Data
 
 ## 2.1 Data Source 
 
-This report utilizes data on crime rates in Toronto neighborhoods obtained from the Toronto Police Service Annual Statistical Report (ASR) [@tpsasr]. The ASR is a comprehensive overview of police related statistics which has been openly available to the public since 2019 [@asr]. The neighborhood crime rate dataset analyzed in this report was obtained in csv format from the City of Toronto Open Data Portal using the R package `opendatatoronto` [@citeopendatatoronto]. The dataset was last updated on May 18th, 2022.
+This report utilizes data on crime rates in Toronto neighborhoods obtained from the Toronto Police Service Annual Statistical Report (ASR) [@tpsasr].  The ASR is a comprehensive overview of police related statistics that has been openly available to the public since 2019 [@tpsasr]. The neighborhood crime rate dataset analyzed in this report was obtained in CSV format from the City of Toronto Open Data Portal using the R package `opendatatoronto` [@citeopendatatoronto]. The dataset was last updated on May 18th, 2022.
 
 
 
 ## 2.2 Data Characteristics 
 
-The Neighborhood Crime Rates dataset contains aggregated data of 8 types of crime in each Toronto neighborhood between the years 2014 and 2020. There are 16920 observations in the dataset and 7 attributes: index, object ID, hood name, hood ID, 2021 population projection, count of each crime type in each year, crime rate of each crime type in each year. The first 4 attributes are identifiers which were removed prior to analysis. An additional attribute to categorize neighborhoods based on population was created during analysis by dividing the population into quartiles and label each neighborhood accordingly (e.g. "small", "medium", "large", "giant"). The crime counts are aggregated by neighborhood, year, and crime type, which I deleted because I only want to focus on crime rate out of such a big dataset. Finally, the crime rate is calculated as the crime count per 100,000 population per year, which I selected data from 2017 to 2021 to cut the data short and clean while also remains rigorousness for reasonable analysis.
+The Neighborhood Crime Rates dataset contains aggregated data on 8 types of crime in each Toronto neighborhood between the years 2014 and 2020. There are 16920 observations in the dataset and 7 attributes: index, object ID, hood name, hood ID, 2021 population projection, count of each crime type in each year, crime rate of each crime type in each year. The first 4 attributes are identifiers that were removed prior to analysis. During analysis, an additional attribute was created to categorize neighborhoods based on population by dividing the population into quartiles and labeling each neighborhood accordingly (e.g. "small", "medium", "large", "giant"). In the dataset, crime counts are aggregated data for Assault, Auto Theft, Break and Enter, Robbery, Theft Over, Homicide, Shootings and Theft from Motor Vehicle of each neighborhood in the time period, which I deleted since I am interested in the crime rate. Finally, the crime rate is calculated as the crime count per 100,000 people by neighborhood based on each year's Projected Population, which I selected data from 2017 to 2021 to cut the data short and clean while also remaining rigorous for reasonable analysis. 
+
+It is worth noting that in the data collection process by Toronto Police Service, the location of crime occurrences has been deliberately offset to the nearest road intersection node to protect the privacy of parties involved in the occurrence (Toronto Police Service 2022). Due to the offset of occurrence location, the numbers by neighborhood may not reflect the exact count of occurrences reported within these geographies, which may lead to incorrect conclusions based on the crime data and makes it difficult to establish meaningful relationships between crime rate and population density.
 
 
 ## 2.3 Data Analysis
 
-Analysis for this project uses the R statistical programming language [@citeR], as well as `tidyverse` [@citetidyverse], `tidyr` [@tidyr] and `dplyr` [@dplyr] programming packages. Because the data is managed using R Projects, `here` is used to reference file locations [@citehere]. Figures and tables are created with `ggplot2` [@ggplot2]  and `kableextra` [@kableextra], and new data frame is created with `tibble` [@tibble]. The package `knitr` [@knitr] is used to generate the PDF report. The package `palettetown` [@palette] is used to create color palette for figures, and the packages `patchwork` [@patchwork] and `ggpubr` [@ggpubr] are used to patch graphs together. 
+Analysis for this project uses the R statistical programming language [@citeR], as well as `tidyverse` [@citetidyverse], `tidyr` [@tidyr] and `dplyr` [@dplyr] programming packages. Because the data is managed using R Projects, `here` is used to reference file locations [@citehere]. Figures and tables are created with `ggplot2` [@ggplot2] and `kableextra` [@kableextra], and a new data frame is created with `tibble` [@tibble]. The package `knitr` [@knitr] is used to generate a PDF report. The package `palettetown` [@palette] is used to create color palettes for figures, and the packages `patchwork` [@patchwork] and `ggpubr` [@ggpubr] are used to patch graphs together. 
 
-The first aspect of the data I investigated is the year-on-year changes in crime rates for different crime categories. @fig-eachyear shows changes in average crime rates for 8 different crime types from 2017 to 2021. It is clear that assault has the highest crime rate in each year, fluctuating around 600, while homicide has the lowest and remains stable around 10. Both the motorcycle theft rate and break and enter rate have a trend of rising first and then falling, with turning points in 2020 and 2019 respectively. The robbery rate decreases year by year from 2017 to 2021, while auto theft rate sees an increase and even exceeded break and enter rate in 2021. Similar to homicide rate, both theft rate and shooting rate remain relatively low and stable over the time period, with theft rate (around 50) slightly higher than shooting rate (around 30) each year.
+The first aspect of the data I investigated was the year-on-year changes in crime rates for different crime categories. @fig-eachyear shows changes in average crime rates for 8 different crime types from 2017 to 2021. It is clear that assault has the highest crime rate each year, fluctuating around 600, while homicide has the lowest and remains stable around 10. Both the motorcycle theft rate and break and enter rate have a trend of rising first and then falling, with turning points in 2020 and 2019 respectively. The robbery rate decreases year by year from 2017 to 2021, while auto theft rate sees an increase and even exceeded break and enter rate in 2021. Similar to homicide rate, both theft rate and shooting rate remain relatively low and stable over the time period, with theft rate (around 50) slightly higher than shooting rate (around 30) each year.
+
+In addition to general trends, it is also possible to observe some specific patterns in the data. For example, auto theft has seen a sharp increase in the mean crime rate, with a 33% increase from 2017 to 2021. This suggests a growing problem with vehicle theft and highlights the need for increased attention and resources to address this issue. On the other hand, break & enter has seen a significant decrease in the mean crime rate from 2019 to 2021, with a 21% decrease. This could indicate that efforts to prevent and address break-ins have been successful, or that crime has shifted to other areas or types of crime.
 
 ```{r}
 #| echo: false
@@ -112,12 +122,19 @@ mean_crime_rate_by_year_and_crime_type |>
     theme(plot.title = element_text(face = "bold"))
 ```
 
-The next aspect of the data I analyzed is the relationship between population and crime rate. 
+The next aspect of the data I analyzed is the relationship between population and crime rate. I categorized different neighborhoods based on their population for basic analysis. Four categories of neighborhoods are listed as follows: 
 
-* Small neighborhood: Has a population fewer than 10,000
+* Small neighborhood: Has a population of fewer than 10,000
+
 * Medium neighborhood: Has a population between 10,001 and 15,000
+
 * Large neighborhood: Has a population between 15,001 and 2,0000
-* Giant neighborhood: Has a population more than 20,000
+
+* Giant neighborhood: Has a population of more than 20,000
+
+@tbl-meancrimerate shows the mean crime rate for each crime category by neighborhood size in 2021. The highest and lowest mean crime rates for each category in the table seem to have a relationship with neighborhood size. The crime rates for assault, break & enter, robbery, and theft in medium-sized neighborhoods are the lowest among 4 neighborhood types, which are 449.48, 163.58, 49.31, and 30.84 respectively. However, smaller neighborhoods have the highest crime rates for assault, break & enter, robbery, homicide, and shooting. In giant-sized neighborhoods, crime rates for theft and motor theft are the highest while the homicide rate and shooting rate are the lowest.
+
+It is also noteworthy that crime rates in different neighborhoods vary significantly depending on the type of crime. For example, the crime rates for theft, homicide, shooting, and motor theft are relatively constant across all neighborhood sizes. In contrast, the crime rates for assault and motor theft vary widely between neighborhood sizes, with a difference between the highest and lowest values of 102.45 and 88.88 respectively.
  
 ```{r}
 #| echo: FALSE
@@ -188,11 +205,25 @@ kable(pivottable [-1,],
 
 ```
 
+Based on the results of Table 1, we could also observe that there is a strict linear relationship between neighborhood size and crime rates of homicide, shooting, and motor theft respectively. Therefore, we used complete data of 2021 population and crime rates of the three above to examine if there is a linear relationship.
 
+@fig-popucrime presents the correlation between population size and the crime rates of homicide, shooting, and motor theft that occurred in 2021. The graph showcases the use of statistical methods to understand the relationship between these two variables.
+
+The p-value, which measures the probability of observing a relationship as strong or stronger than the one observed if the null hypothesis is true (no relationship between population size and crime rate), is used to determine the statistical significance of the relationship. A p-value of less than 0.05 is considered statistically significant, meaning that the relationship is unlikely to be due to chance. The R-value, also known as Pearson's correlation coefficient, measures the strength and direction of the relationship between two variables.
+
+For the relationship between population size and homicide rate, the p-value is less than 0.05, which means that the relationship is statistically significant. The negative value of r, which is the correlation coefficient, is -0.44. This implies that as population size increases, the homicide rate decreases. However, the strength of this relationship is not very strong as the value of r is close to 0.
+
+On the other hand, the relationship between population size and shooting rate is not statistically significant, as the p-value is 0.141 which is greater than 0.05. This suggests that the observed relationship between population size and shooting rate could be due to random chance and not a true relationship. Similarly, the p-value of 0.732 for the relationship between population size and motor theft rate is also greater than 0.05, which implies that population size does not have a significant effect on the motor theft rate.
+
+However, the results are based on data from one single year with many missing values, so it is possible that the results may not accurately reflect the true relationship between population and crime rates. In addition, as stated before, the offset of crime locations can also have a significant impact on the results. For example, if two areas have the same population but one is closer to a road intersection, it will appear to have a higher crime rate due to the increased reporting of incidents in that area. This can lead to misleading conclusions and result in biased or unethical decisions and policies being made based on faulty data.
+
+In summary, there is no clear relationship between population size and crime rates, and further research is required to establish a clearer understanding of the relationship.
 
 ```{r}
 #| label: fig-popucrime
 #| fig.cap: "Relationship between crime rate and population"
+#| fig.width : 8
+#| fig.height : 4
 #| echo: false
 #| warning: false
 #| message: false
@@ -208,24 +239,28 @@ homicide <-
   ggplot(mapping = aes(x = population2021, y= homicide_rate2021))+
   geom_jitter() +
   geom_smooth(method = lm, color = "darkturquoise", se = FALSE) +
-  theme_minimal() +
+  theme_classic() +
   labs( x = "",
         y = "",
    title = "Homicide"
     ) +
-  theme(plot.title = element_text(hjust=0.5))
+  theme(plot.title = element_text(hjust=0.5))+ 
+  stat_cor(method = "pearson",
+            label.x = 50000, label.y = 20,color="darkturquoise",p.accuracy = 0.001)
 
 shootings <-
   selected_crime_rate2021 |>
   ggplot(mapping = aes(x = population2021, y= shootings_rate2021))+
   geom_jitter() +
   geom_smooth(method = lm, color = "darkturquoise", se = FALSE) +
-  theme_minimal() +
+  theme_classic() +
   labs( x = "",
         y = "",
     title = "Shootings"
     ) +
-  theme(plot.title = element_text(hjust=0.5))
+  theme(plot.title = element_text(hjust=0.5))+ 
+  stat_cor(method = "pearson",
+            label.x = 50000, label.y = 50,color="darkturquoise",p.accuracy = 0.001)
 
 
 motor <-
@@ -233,12 +268,14 @@ motor <-
   ggplot(mapping = aes(x = population2021, y= theftfrom_motor_vehicle_rate2021))+
   geom_jitter() +
   geom_smooth(method = lm, color = "darkturquoise", se = FALSE) +
-  theme_minimal()+
+  theme_classic()+
   labs( x = "",
         y = "",
     title = "Motor Theft"
     ) +
-  theme(plot.title = element_text(hjust=0.5))
+  theme(plot.title = element_text(hjust=0.5))+ 
+  stat_cor(method = "pearson",
+            label.x = 50000, label.y = 750,color="darkturquoise",p.accuracy = 0.001)
 
 
 # Patch graphs together
@@ -246,7 +283,7 @@ patch <- ggarrange((homicide + shootings) /
   motor)
 
 annotate_figure(patch, 
-                top = "Relationship Between Homicide Rate and Population Is More Obvious",
+                top = " Linear Relationship Between Homicide Rate and Population Is More Reliable",
                 bottom = "Population",
                 left = "Crime Rate")
 ```
