@@ -1,3 +1,0 @@
-question1:  data simulation
-question2: pack diagrams/ use one diagram
-question3: 
